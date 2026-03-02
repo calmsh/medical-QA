@@ -1,0 +1,50 @@
+"""
+BM25 Retriever — 원본: rag_system/bm25_retriever.py
+변경점: Elasticsearch 연결을 HTTP(보안 비활성화)로 변경
+나머지 로직(retrieve_docs)은 원본과 100% 동일
+"""
+from elasticsearch import Elasticsearch
+import os
+import json
+
+class BM25Retriever:
+    def __init__(self):
+        # ★ 변경: 원본은 HTTPS + 인증서 + 비밀번호
+        # 원본 코드:
+        #   elastic_password = os.getenv('ELASTIC_PASSWORD')
+        #   self.es = Elasticsearch(
+        #       ['https://localhost:9200'],
+        #       basic_auth=('elastic', elastic_password),
+        #       verify_certs=True,
+        #       ca_certs="/home/rag/.crt/http_ca.crt",
+        #       request_timeout=60
+        #   )
+        self.es = Elasticsearch(['http://localhost:9200'], request_timeout=60)
+        self.index = "pubmed_index"
+
+    # ─── 이하 원본과 100% 동일 ───
+    def retrieve_docs(self, query: str, k: int = 10):
+        es_query = {
+            "size": k,
+            "query": {
+                "match": {
+                    "content": query
+                }
+            },
+            "_source": ["PMID", "title", "content"]
+        }
+        # Execute the search query
+        response = self.es.search(index=self.index, body=es_query)
+
+        # Format the results into the desired JSON structure
+        results = {}
+        for idx, doc in enumerate(response['hits']['hits'], 1):
+            doc_key = f"doc{idx}"
+            results[doc_key] = {
+                'PMID': doc['_source']['PMID'],
+                'title': doc['_source']['title'],
+                'content': doc['_source']['content'],
+                'score': doc['_score']
+            }
+
+        return json.dumps(results, indent=4)

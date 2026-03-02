@@ -1,0 +1,19 @@
+# requirements_windows.txt
+elasticsearch==8.13.0
+elastic-transport==8.13.0
+faiss-cpu==1.8.0
+Flask==3.0.3
+huggingface-hub==0.22.2
+matplotlib==3.8.4
+numpy==1.26.4
+openai==1.23.3
+pandas==2.2.2
+requests==2.31.0
+scikit-learn==1.4.2
+scipy==1.13.0
+sentence-transformers==2.7.0
+tqdm==4.66.2
+transformers==4.40.0
+torch==2.2.2
+datasets
+gradio
